@@ -1,0 +1,977 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Colony Dashboard [Hachi] - The Ants</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🐕</text></svg>">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;700&family=Orbitron:wght@700&family=Roboto+Mono:wght@700&display=swap">
+<style>
+/*
+=== 更新履歴 ===
+
+v1.0  2026.02.14  初回リリース。孵化ポイントタイマー実装・リアルタイムカウントダウン
+v1.1  2026.02.14  テーマ切替機能追加・フォント切替機能・表示数変更(1-5件)
+v1.2  2026.02.14  ユニバーサルデザイン化・視認性向上・日本語カウントダウン表記
+v1.3  2026.02.23  文字サイズ調整・配色改善(目に優しい色合い)・時計バー強調
+v2.0  2026.02.23  2カラムレイアウト化・イベントタイマー3種追加・JST/UTC切替機能実装
+v2.0.1 2026.02.24 タイムゾーンバグ修正・Light/Gray/Creamテーマ配色調整
+v2.1  2026.03.05  英語調カウントダウン(Next)・🐕[HACHI]命名・Roboto Mono採用・バージョン表示追加
+v2.1.1 2026.03.05 Warzone 2行レイアウト・フォント24px・コンパネ幅拡大(420px)
+v2.1.2 2026.03.05 タイトル変更(-HACHI-)・コンパネ間隔調整・バージョン透明度0.3
+v2.1.3 2026.03.05 セクションラベルmargin削除・バージョン表示色変更(sub-text)・透明度廃止
+v2.2.0 2026.03.06 コンパネ間隔統一・Warzone 2行レイアウト修正
+v3.0  2026.03.07  設定パネル刷新(ZONE/SKIN/VIEW/SAVE)・カウントダウン3色化・表示件数可変・localStorage永続化・テーマ7色新調
+v3.0.1 2026.03.07 ハニカムDark中央配置・ZONE/VIEW margin調整・SAVEボタンサイズ調整
+v3.0.2 2026.03.07 ライト系テーマ時のZONE・SAVEボタン色連動(mech変数)
+v3.0.3 2026.03.07 ライト系SAVEボタン文字・枠色をペリウィンクル(#7b9fd4)に統一
+v3.0  2026.03.06  設定パネル刷新(ZONE/SKIN/VIEW/SAVE)・カウントダウン3色化・表示件数可変・localStorage永続化・テーマ7色新調
+*/
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+/* ===== テーマ ===== */
+:root {
+  --bg:       #1a1a1a;
+  --surface:  #262626;
+  --card1:    #2e2e2e;
+  --card2:    #272727;
+  --border:   #404040;
+  --accent:   #f59e0b;
+  --text:     #f0f0f0;
+  --sub-text: #a0a0a0;
+  --dim-text: #686868;
+  --cd-soon:  #34d399;
+  --cd-near:  #a0a0a0;
+  --cd-far:   #7b9fd4;
+  --countdown-utc: #fde047;
+  --mech-bg:           #0d0d0d;
+  --mech-track:        #1a1a1a;
+  --mech-track-border: #383838;
+  --mech-knob:         linear-gradient(180deg, #707070 0%, #404040 100%);
+  --mech-save-border:  #404040;
+  --mech-save-text:    #686868;
+}
+[data-theme="navy"] {
+  --bg:       #1a2a3a;
+  --surface:  #1f3347;
+  --card1:    #243c54;
+  --card2:    #203650;
+  --border:   #2e4d6a;
+  --accent:   #f59e0b;
+  --text:     #e8f4ff;
+  --sub-text: #6a90b0;
+  --dim-text: #3a5570;
+  --cd-soon:  #34d399;
+  --cd-near:  #6a90b0;
+  --cd-far:   #7b9fd4;
+  --countdown-utc: #fde047;
+}
+[data-theme="forest"] {
+  --bg:       #1a2a1f;
+  --surface:  #1f331f;
+  --card1:    #243c24;
+  --card2:    #203620;
+  --border:   #2e4d2e;
+  --accent:   #f59e0b;
+  --text:     #e0f4e4;
+  --sub-text: #60906a;
+  --dim-text: #35573a;
+  --cd-soon:  #34d399;
+  --cd-near:  #60906a;
+  --cd-far:   #7b9fd4;
+  --countdown-utc: #fde047;
+}
+[data-theme="crimson"] {
+  --bg:       #2a1018;
+  --surface:  #331520;
+  --card1:    #3c1c28;
+  --card2:    #361824;
+  --border:   #502030;
+  --accent:   #f59e0b;
+  --text:     #ffe8ee;
+  --sub-text: #a06070;
+  --dim-text: #704050;
+  --cd-soon:  #34d399;
+  --cd-near:  #a06070;
+  --cd-far:   #7b9fd4;
+  --countdown-utc: #fde047;
+}
+[data-theme="warm"] {
+  --bg:       #e8e0d0;
+  --surface:  #f0e8d8;
+  --card1:    #faf0e0;
+  --card2:    #ece4d4;
+  --border:   #c8b898;
+  --accent:   #b8860b;
+  --text:     #3a2a1a;
+  --sub-text: #6a5a4a;
+  --dim-text: #a0907a;
+  --cd-soon:  #16a34a;
+  --cd-near:  #6a5a4a;
+  --cd-far:   #4a6fa5;
+  --countdown-utc: #ca8a04;
+  --mech-bg:           #d8cbb8;
+  --mech-track:        #c8b8a0;
+  --mech-track-border: #b0a080;
+  --mech-knob:         linear-gradient(180deg, #c0a878 0%, #8a7050 100%);
+  --mech-save-border:  #7b9fd4;
+  --mech-save-text:    #7b9fd4;
+}
+[data-theme="sand"] {
+  --bg:       #d4c8a8;
+  --surface:  #ddd0b0;
+  --card1:    #e8dac0;
+  --card2:    #d8ccac;
+  --border:   #b0a070;
+  --accent:   #8b6914;
+  --text:     #2a2010;
+  --sub-text: #5a4a2a;
+  --dim-text: #8a7a5a;
+  --cd-soon:  #16a34a;
+  --cd-near:  #5a4a2a;
+  --cd-far:   #4a6fa5;
+  --countdown-utc: #ca8a04;
+  --mech-bg:           #c0b090;
+  --mech-track:        #b0a080;
+  --mech-track-border: #907860;
+  --mech-knob:         linear-gradient(180deg, #a08858 0%, #706040 100%);
+  --mech-save-border:  #7b9fd4;
+  --mech-save-text:    #7b9fd4;
+}
+[data-theme="slate"] {
+  --bg:       #b8c8d8;
+  --surface:  #c4d4e4;
+  --card1:    #d0e0f0;
+  --card2:    #bccede;
+  --border:   #8898a8;
+  --accent:   #2a5a8a;
+  --text:     #0a1a2a;
+  --sub-text: #2a4a6a;
+  --dim-text: #5a7a9a;
+  --cd-soon:  #16a34a;
+  --cd-near:  #2a4a6a;
+  --cd-far:   #1a4a7a;
+  --countdown-utc: #ca8a04;
+  --mech-bg:           #90a8c0;
+  --mech-track:        #8098b0;
+  --mech-track-border: #6080a0;
+  --mech-knob:         linear-gradient(180deg, #7898b8 0%, #486888 100%);
+  --mech-save-border:  #7b9fd4;
+  --mech-save-text:    #7b9fd4;
+}
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Noto Sans JP', sans-serif;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 16px;
+  transition: background 0.3s, color 0.3s;
+  position: relative;
+}
+
+.wrapper {
+  width: 100%;
+  max-width: 1000px;
+}
+
+/* ===== タイトル ===== */
+.title {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 16px;
+  letter-spacing: 0.4em;
+  color: var(--accent);
+  text-align: center;
+  margin-bottom: 16px;
+}
+.title-hachi { color: #d0d0d0; }
+
+/* ===== バージョン表示 ===== */
+.version {
+  position: fixed;
+  bottom: 12px;
+  left: 12px;
+  font-family: 'Roboto Mono', monospace;
+  font-size: 10px;
+  color: var(--sub-text);
+  letter-spacing: 0.05em;
+  user-select: none;
+  pointer-events: none;
+}
+
+/* ===== 2カラムレイアウト ===== */
+.main-layout {
+  display: grid;
+  grid-template-columns: 420px 1fr;
+  gap: 16px;
+  align-items: start;
+}
+@media (max-width: 768px) {
+  .main-layout { grid-template-columns: 1fr; }
+}
+
+/* ===== 左カラム ===== */
+.left-col {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+/* ===== セクションラベル ===== */
+.section-label {
+  font-size: 12px;
+  color: var(--sub-text);
+  letter-spacing: 0.2em;
+  padding-left: 2px;
+  text-transform: uppercase;
+}
+
+/* ===== 時計バー ===== */
+.clock-bar {
+  background: var(--surface);
+  border: 2px solid var(--text);
+  border-radius: 8px;
+  padding: 10px 14px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.clock-time {
+  font-family: 'Roboto Mono', monospace;
+  font-size: 28px; font-weight: 700;
+  color: var(--text);
+  letter-spacing: 0.05em;
+  transition: color 0.3s;
+}
+.clock-date {
+  font-family: 'Roboto Mono', monospace;
+  font-size: 14px;
+  color: var(--text);
+  letter-spacing: 0.08em;
+  transition: color 0.3s;
+}
+
+/* UTC時のカウントダウン色変更 */
+body.utc-mode .clock-time,
+body.utc-mode .clock-date,
+body.utc-mode .event-countdown,
+body.utc-mode .event-dual-time,
+body.utc-mode .card-until {
+  color: var(--countdown-utc) !important;
+}
+
+/* ===== 設定パネル ===== */
+.ctrl-panel {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 18px 4px;
+  display: flex;
+  align-items: stretch;
+  gap: 14px;
+}
+
+/* ===== ZONE ===== */
+.zone-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex-shrink: 0;
+  margin-left: 28px;
+}
+.zone-frame {
+  width: 36px;
+  background: var(--mech-bg);
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  padding: 6px 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  cursor: pointer;
+}
+.zone-pos-label {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 7px; letter-spacing: 0.1em;
+  color: var(--dim-text);
+  transition: color 0.2s;
+}
+.zone-pos-label.active { color: var(--cd-soon); }
+.zone-track {
+  width: 10px; height: 60px;
+  background: var(--mech-track);
+  border: 1px solid var(--mech-track-border);
+  border-radius: 2px;
+  position: relative;
+}
+.zone-knob {
+  width: 18px; height: 14px;
+  background: var(--mech-knob);
+  border: 1px solid #f59e0b88;
+  border-radius: 2px;
+  position: absolute;
+  left: 50%; top: 4px;
+  transform: translateX(-50%);
+  box-shadow: 0 0 6px rgba(245,158,11,0.3);
+  transition: top 0.2s;
+}
+.zone-knob::after {
+  content: '';
+  position: absolute;
+  left: 2px; right: 2px; top: 50%;
+  height: 1px; background: #f59e0b66;
+  transform: translateY(-50%);
+}
+.zone-wrap.utc .zone-knob { top: 42px; }
+.zone-wrap.utc .zone-pos-label.active { color: var(--countdown-utc); }
+
+/* ===== 中央 (SKIN + SAVE) ===== */
+.center-wrap {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 0;
+}
+
+/* ===== SKIN ハニカム ===== */
+.tc-dark    { background: radial-gradient(circle at 35% 35%, #888, #222); }
+.tc-navy    { background: radial-gradient(circle at 35% 35%, #4a6fa5, #1a2a3a); }
+.tc-forest  { background: radial-gradient(circle at 35% 35%, #4a7c59, #1a2a1f); }
+.tc-crimson { background: radial-gradient(circle at 35% 35%, #a05060, #2a1018); }
+.tc-warm    { background: radial-gradient(circle at 35% 35%, #e8e0d0, #c8b898); }
+.tc-sand    { background: radial-gradient(circle at 35% 35%, #d4c8a8, #b0a070); }
+.tc-slate   { background: radial-gradient(circle at 35% 35%, #b8c8d8, #8898a8); }
+
+/*
+  flat-top 完全密着:
+  R=22px → W=44px, H=38px
+  hStep=33px, vStep=38px, oddOffset=19px
+*/
+.hive { position: relative; width: 110px; height: 95px; }
+.hex-cell {
+  position: absolute; cursor: pointer;
+  width: 44px; height: 38px;
+  transition: filter 0.15s, transform 0.15s; z-index: 1;
+}
+.hex-cell:hover { filter: brightness(1.3); transform: scale(1.06); z-index: 2; }
+.hex-outer {
+  clip-path: polygon(25% 0%, 75% 0%, 100% 50%, 75% 100%, 25% 100%, 0% 50%);
+  background: var(--accent);
+  width: 100%; height: 100%;
+  display: flex; align-items: center; justify-content: center;
+}
+.hex-inner {
+  width: 37px; height: 32px;
+  clip-path: polygon(25% 0%, 75% 0%, 100% 50%, 75% 100%, 25% 100%, 0% 50%);
+}
+.hex-cell.active .hex-outer { background: #fff; }
+.hex-cell.active { filter: drop-shadow(0 0 5px #f59e0baa); z-index: 2; }
+
+.hive .c11 { left: 0px;  top: 19px; }
+.hive .c12 { left: 0px;  top: 57px; }
+.hive .c21 { left: 33px; top: 0px; }
+.hive .c22 { left: 33px; top: 38px; }
+.hive .c23 { left: 33px; top: 76px; }
+.hive .c31 { left: 66px; top: 19px; }
+.hive .c32 { left: 66px; top: 57px; }
+
+/* ===== SAVE ===== */
+.save-wrap { width: 102px; margin-top: 24px; }
+.save-btn {
+  width: 100%; height: 26px;
+  background: var(--mech-bg);
+  border: 1px solid var(--mech-save-border);
+  border-radius: 3px;
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+  cursor: pointer; transition: border-color 0.2s;
+}
+.save-btn:hover { border-color: #f97316; }
+.save-dot {
+  width: 7px; height: 7px; border-radius: 50%;
+  background: var(--mech-save-text);
+  flex-shrink: 0;
+  transition: background 0.2s;
+}
+.save-text {
+  font-family: 'Orbitron', sans-serif; font-size: 9px; font-weight: 700;
+  letter-spacing: 0.3em; color: var(--mech-save-text);
+  transition: color 0.2s;
+}
+.save-btn.dirty {
+  border-color: var(--mech-save-border);
+  animation: breathing 2s ease-in-out infinite;
+}
+.save-btn.dirty .save-dot {
+  background: #f97316;
+  box-shadow: 0 0 5px #f97316;
+  animation: pulse-dot 2s ease-in-out infinite;
+}
+.save-btn.dirty .save-text { color: var(--mech-save-text); }
+
+@keyframes breathing {
+  0%,100% { box-shadow: 0 0 4px #f9731633; }
+  50%      { box-shadow: 0 0 12px #f9731688; }
+}
+@keyframes pulse-dot {
+  0%,100% { opacity: 1; }
+  50%      { opacity: 0.4; }
+}
+
+/* ===== VIEW ===== */
+.view-wrap { flex-shrink: 0; margin-right: 28px; }
+.view-seg {
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  overflow: hidden;
+  display: flex; flex-direction: column;
+}
+.vs-btn {
+  width: 32px; height: 24px;
+  background: var(--surface); border: none; border-bottom: 1px solid var(--border);
+  cursor: pointer;
+  font-family: 'Orbitron', sans-serif; font-size: 10px; font-weight: 700;
+  color: var(--dim-text);
+  display: flex; align-items: center; justify-content: center;
+  transition: all 0.15s;
+}
+.vs-btn:last-child { border-bottom: none; }
+.vs-btn:hover { color: var(--sub-text); }
+.vs-btn.active {
+  background: #f59e0b18;
+  color: var(--accent);
+  border-left: 2px solid var(--accent);
+}
+
+/* ===== イベントタイマー ===== */
+.event-timer {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 12px 14px;
+  display: flex; flex-direction: column; gap: 4px;
+}
+.event-label {
+  font-size: 12px; color: var(--sub-text);
+  letter-spacing: 0.08em; text-transform: uppercase;
+}
+.event-countdown {
+  font-family: 'Orbitron', sans-serif; font-size: 26px; font-weight: 700;
+  color: var(--cd-soon); letter-spacing: 0.02em; text-align: right;
+}
+.event-dual { display: flex; flex-direction: column; gap: 4px; }
+.event-dual-row { display: flex; align-items: center; }
+.event-dual-time {
+  font-family: 'Orbitron', sans-serif; font-size: 24px; font-weight: 700;
+  color: var(--cd-soon);
+}
+
+/* ===== 右カラム ===== */
+.right-col {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+/* ===== カード ===== */
+.hatch-card {
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  padding: 14px 16px;
+  gap: 12px;
+  background: var(--card2);
+  transition: background 0.3s, border-color 0.3s;
+}
+.rank-1 {
+  background: var(--card1);
+  border-color: var(--accent);
+  border-width: 2px;
+  padding: 18px;
+}
+.rank-2 {
+  background: var(--card1);
+  padding: 15px;
+}
+
+/* 左：カウントダウン */
+.card-countdown { flex: 1; min-width: 0; }
+.card-until-label {
+  font-size: 10px;
+  color: var(--sub-text);
+  letter-spacing: 0.15em;
+  margin-bottom: 2px;
+  text-transform: uppercase;
+}
+.card-until {
+  font-family: 'Orbitron', sans-serif;
+  font-weight: 700;
+  line-height: 1.1;
+  white-space: nowrap;
+  transition: color 0.3s;
+}
+.rank-1 .card-until { font-size: clamp(30px, 8vw, 42px); }
+.rank-2 .card-until { font-size: clamp(24px, 6vw, 32px); }
+.rank-3 .card-until,
+.rank-4 .card-until,
+.rank-5 .card-until,
+.rank-6 .card-until,
+.rank-7 .card-until,
+.rank-8 .card-until { font-size: clamp(18px, 5vw, 24px); }
+
+/* カウントダウン3色 */
+.cd-soon { color: var(--cd-soon); }
+.cd-near { color: var(--cd-near); }
+.cd-far  { color: var(--cd-far); }
+
+/* 右：曜日・時間帯 */
+.card-info { text-align: right; flex-shrink: 0; }
+.card-day {
+  color: var(--sub-text);
+  letter-spacing: 0.1em;
+  margin-bottom: 3px;
+}
+.rank-1 .card-day { color: var(--accent); font-weight: 700; font-size: 12px; }
+.rank-2 .card-day { font-size: 11px; }
+.rank-3 .card-day,
+.rank-4 .card-day,
+.rank-5 .card-day,
+.rank-6 .card-day,
+.rank-7 .card-day,
+.rank-8 .card-day { font-size: 11px; }
+
+.card-slot { font-family: 'Roboto Mono', monospace; color: var(--text); }
+.rank-1 .card-slot { font-size: clamp(14px, 3.5vw, 17px); font-weight: 700; }
+.rank-2 .card-slot { font-size: clamp(13px, 3vw, 15px); font-weight: 700; }
+.rank-3 .card-slot,
+.rank-4 .card-slot,
+.rank-5 .card-slot,
+.rank-6 .card-slot,
+.rank-7 .card-slot,
+.rank-8 .card-slot { font-size: clamp(11px, 2.5vw, 13px); color: var(--sub-text); }
+
+/* NOWバッジ */
+.now-badge {
+  display: inline-block;
+  font-size: 9px; font-weight: 700;
+  letter-spacing: 0.2em;
+  color: #000;
+  background: var(--accent);
+  border-radius: 3px;
+  padding: 2px 6px;
+  margin-left: 6px;
+  vertical-align: middle;
+  animation: blink 1.2s ease-in-out infinite;
+}
+@keyframes blink {
+  0%,100% { opacity: 1; }
+  50%      { opacity: 0.3; }
+}
+</style>
+</head>
+<body>
+<div class="wrapper">
+
+  <div class="title">THE ANTS &mdash; <span class="title-hachi">HACHI</span></div>
+
+  <div class="main-layout">
+
+    <!-- 左カラム -->
+    <div class="left-col">
+      <div class="section-label">🐕 Control Panel</div>
+
+      <!-- 時計バー -->
+      <div class="clock-bar">
+        <div class="clock-date" id="date">----/--/-- (-)</div>
+        <div class="clock-time" id="clock">--:--:--</div>
+      </div>
+
+      <!-- 設定パネル -->
+      <div class="ctrl-panel">
+
+        <!-- ZONE -->
+        <div class="zone-wrap" id="zone-wrap">
+          <div class="zone-frame" id="zone-frame">
+            <span class="zone-pos-label active" id="zone-jst">JST</span>
+            <div class="zone-track">
+              <div class="zone-knob" id="zone-knob"></div>
+            </div>
+            <span class="zone-pos-label" id="zone-utc">UTC</span>
+          </div>
+        </div>
+
+        <!-- 中央 (SKIN + SAVE) -->
+        <div class="center-wrap">
+          <div class="hive" id="skin-btns">
+            <div class="hex-cell c11" data-theme="navy"><div class="hex-outer"><div class="hex-inner tc-navy"></div></div></div>
+            <div class="hex-cell c12" data-theme="crimson"><div class="hex-outer"><div class="hex-inner tc-crimson"></div></div></div>
+            <div class="hex-cell c21" data-theme="forest"><div class="hex-outer"><div class="hex-inner tc-forest"></div></div></div>
+            <div class="hex-cell c22 active" data-theme="dark"><div class="hex-outer"><div class="hex-inner tc-dark"></div></div></div>
+            <div class="hex-cell c23" data-theme="sand"><div class="hex-outer"><div class="hex-inner tc-sand"></div></div></div>
+            <div class="hex-cell c31" data-theme="warm"><div class="hex-outer"><div class="hex-inner tc-warm"></div></div></div>
+            <div class="hex-cell c32" data-theme="slate"><div class="hex-outer"><div class="hex-inner tc-slate"></div></div></div>
+          </div>
+          <div class="save-wrap">
+            <div class="save-btn" id="save-btn">
+              <div class="save-dot"></div>
+              <div class="save-text">SAVE</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- VIEW -->
+        <div class="view-wrap">
+          <div class="view-seg" id="view-btns">
+            <div class="vs-btn" data-count="3">3</div>
+            <div class="vs-btn" data-count="4">4</div>
+            <div class="vs-btn active" data-count="5">5</div>
+            <div class="vs-btn" data-count="6">6</div>
+            <div class="vs-btn" data-count="7">7</div>
+            <div class="vs-btn" data-count="8">8</div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- イベントタイマー -->
+      <div class="event-timer">
+        <div class="event-label">WARZONE ENTRY (月 09:30 / 13:00)</div>
+        <div class="event-dual">
+          <div class="event-dual-row">
+            <div class="event-dual-time" id="warzone1">--:--</div>
+          </div>
+          <div class="event-dual-row" style="justify-content: flex-end;">
+            <div class="event-dual-time" id="warzone2">--:--</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="event-timer">
+        <div class="event-label">ANT HILL DEVELOPMENT (火 09:00)</div>
+        <div class="event-countdown" id="anthill">--:--</div>
+      </div>
+
+      <div class="event-timer">
+        <div class="event-label">NEXT EVOLUTION TIME (水 10:05)</div>
+        <div class="event-countdown" id="evolution">--:--</div>
+      </div>
+    </div>
+
+    <!-- 右カラム -->
+    <div class="right-col">
+      <div class="section-label">🐕 Hatch Point Schedule</div>
+      <div id="card-list"></div>
+    </div>
+
+  </div>
+</div>
+
+<!-- バージョン表示 -->
+<div class="version">Mar 07 '26 🐕 v3.0.3</div>
+
+<script>
+const SLOTS = [
+  { day:1, h:15, label:'月曜日', disp:'15:05-16:00' },
+  { day:1, h:16, label:'月曜日', disp:'16:05-17:00' },
+  { day:1, h:23, label:'月曜日', disp:'23:05-24:00' },
+  { day:2, h: 0, label:'火曜日', disp:' 0:05- 1:00' },
+  { day:2, h: 7, label:'火曜日', disp:' 7:05- 8:00' },
+  { day:2, h: 8, label:'火曜日', disp:' 8:05- 9:00' },
+  { day:2, h:12, label:'火曜日', disp:'12:05-13:00' },
+  { day:2, h:15, label:'火曜日', disp:'15:05-16:00' },
+  { day:2, h:20, label:'火曜日', disp:'20:05-21:00' },
+  { day:2, h:23, label:'火曜日', disp:'23:05-24:00' },
+  { day:3, h: 4, label:'水曜日', disp:' 4:05- 5:00' },
+  { day:3, h: 7, label:'水曜日', disp:' 7:05- 8:00' },
+  { day:3, h:13, label:'水曜日', disp:'13:05-14:00' },
+  { day:3, h:21, label:'水曜日', disp:'21:05-22:00' },
+  { day:4, h: 5, label:'木曜日', disp:' 5:05- 6:00' },
+  { day:5, h:14, label:'金曜日', disp:'14:05-15:00' },
+  { day:5, h:15, label:'金曜日', disp:'15:05-16:00' },
+  { day:5, h:22, label:'金曜日', disp:'22:05-23:00' },
+  { day:5, h:23, label:'金曜日', disp:'23:05-24:00' },
+  { day:6, h: 6, label:'土曜日', disp:' 6:05- 7:00' },
+  { day:6, h: 7, label:'土曜日', disp:' 7:05- 8:00' },
+  { day:6, h:15, label:'土曜日', disp:'15:05-16:00' },
+  { day:6, h:16, label:'土曜日', disp:'16:05-17:00' },
+  { day:6, h:23, label:'土曜日', disp:'23:05-24:00' },
+  { day:0, h: 0, label:'日曜日', disp:' 0:05- 1:00' },
+  { day:0, h: 7, label:'日曜日', disp:' 7:05- 8:00' },
+  { day:0, h: 8, label:'日曜日', disp:' 8:05- 9:00' },
+];
+
+const DAYS_JP = ['日','月','火','水','木','金','土'];
+const GAP_THRESHOLD = 8 * 3600; // 8時間 (秒)
+
+// ===== 設定状態 =====
+let settings = {
+  theme: 'dark',
+  isUTC: false,
+  viewCount: 5,
+};
+let pendingSettings = { ...settings };
+let isDirty = false;
+
+// ===== localStorage =====
+function loadSettings() {
+  try {
+    const saved = localStorage.getItem('hachi_settings');
+    if (saved) {
+      const parsed = JSON.parse(saved);
+      settings = { ...settings, ...parsed };
+      pendingSettings = { ...settings };
+    }
+  } catch(e) {}
+}
+
+function saveSettings() {
+  try {
+    localStorage.setItem('hachi_settings', JSON.stringify(settings));
+  } catch(e) {}
+}
+
+function markDirty() {
+  isDirty = true;
+  document.getElementById('save-btn').classList.add('dirty');
+}
+
+function markClean() {
+  isDirty = false;
+  document.getElementById('save-btn').classList.remove('dirty');
+}
+
+// ===== テーマ適用 =====
+function applyTheme(theme) {
+  if (theme === 'dark') {
+    delete document.body.dataset.theme;
+  } else {
+    document.body.dataset.theme = theme;
+  }
+  document.querySelectorAll('.hex-cell').forEach(c => {
+    c.classList.toggle('active', c.dataset.theme === theme);
+  });
+}
+
+// ===== ZONE適用 =====
+function applyZone(isUTC) {
+  const wrap = document.getElementById('zone-wrap');
+  const jstLabel = document.getElementById('zone-jst');
+  const utcLabel = document.getElementById('zone-utc');
+  if (isUTC) {
+    wrap.classList.add('utc');
+    jstLabel.classList.remove('active');
+    utcLabel.classList.add('active');
+    document.body.classList.add('utc-mode');
+  } else {
+    wrap.classList.remove('utc');
+    jstLabel.classList.add('active');
+    utcLabel.classList.remove('active');
+    document.body.classList.remove('utc-mode');
+  }
+}
+
+// ===== VIEW適用 =====
+function applyViewCount(count) {
+  document.querySelectorAll('.vs-btn').forEach(b => {
+    b.classList.toggle('active', parseInt(b.dataset.count) === count);
+  });
+  buildCards(count);
+}
+
+// ===== カード構築 =====
+function buildCards(count) {
+  const list = document.getElementById('card-list');
+  list.innerHTML = '';
+  const n = count !== undefined ? count : settings.viewCount;
+  for (let i = 0; i < n; i++) {
+    const rank = i + 1;
+    const card = document.createElement('div');
+    card.className = `hatch-card rank-${rank}`;
+    card.id = `card-${rank}`;
+    card.innerHTML = `
+      <div class="card-countdown">
+        <div class="card-until-label" id="c-label-${rank}"></div>
+        <div class="card-until" id="c-until-${rank}"></div>
+      </div>
+      <div class="card-info">
+        <div class="card-day" id="c-day-${rank}"></div>
+        <div class="card-slot" id="c-slot-${rank}"></div>
+      </div>`;
+    list.appendChild(card);
+  }
+}
+
+// ===== カウントダウン色判定 =====
+function getCdClass(index, sorted) {
+  const item = sorted[index];
+  if (item.secs === 0) return 'cd-soon'; // NOW
+  // Nextを探す
+  let nextIndex = -1;
+  for (let i = 0; i < sorted.length; i++) {
+    if (sorted[i].secs !== 0) { nextIndex = i; break; }
+  }
+  if (index === nextIndex) return 'cd-soon'; // Next
+  // 直前スロットとの差
+  const prevSecs = sorted[index - 1] ? sorted[index - 1].secs : 0;
+  const diff = item.secs - prevSecs;
+  return diff > GAP_THRESHOLD ? 'cd-far' : 'cd-near';
+}
+
+function updateCards(sorted) {
+  const n = pendingSettings.viewCount;
+  let nextIndex = -1;
+  for (let i = 0; i < sorted.length; i++) {
+    if (sorted[i].secs !== 0) { nextIndex = i; break; }
+  }
+  for (let i = 0; i < n; i++) {
+    const item = sorted[i];
+    const rank = i + 1;
+    const dayEl   = document.getElementById(`c-day-${rank}`);
+    const slotEl  = document.getElementById(`c-slot-${rank}`);
+    const labelEl = document.getElementById(`c-label-${rank}`);
+    const untilEl = document.getElementById(`c-until-${rank}`);
+    if (!dayEl) continue;
+    const active = item.secs === 0;
+    dayEl.innerHTML = item.label + (active ? ' <span class="now-badge">NOW</span>' : '');
+    slotEl.textContent  = item.disp;
+    labelEl.textContent = (i === nextIndex) ? 'Next' : '';
+    untilEl.textContent = formatCountdown(item.secs);
+    // 3色クラス付与
+    untilEl.className = 'card-until ' + getCdClass(i, sorted);
+  }
+}
+
+// ===== タイマー系 =====
+function secondsUntil(now, slot) {
+  const nowMs = now.getTime();
+  const midnight = new Date(now);
+  midnight.setHours(0,0,0,0);
+  const mondayMs = midnight.getTime() - ((now.getDay()+6)%7)*86400000;
+  const offset = (slot.day+6)%7;
+  let startMs = mondayMs + offset*86400000 + slot.h*3600000 + 5*60000;
+  const endMs = startMs + 55*60000;
+  if (nowMs >= startMs && nowMs < endMs) return 0;
+  if (startMs <= nowMs) startMs += 7*86400000;
+  return Math.floor((startMs - nowMs)/1000);
+}
+
+function secondsUntilEvent(now, targetDay, targetHour, targetMinute) {
+  const nowMs = now.getTime();
+  const midnight = new Date(now);
+  midnight.setHours(0,0,0,0);
+  const currentDay = now.getDay();
+  let daysUntil = (targetDay - currentDay + 7) % 7;
+  if (daysUntil === 0) {
+    const todayTarget = new Date(midnight);
+    todayTarget.setHours(targetHour, targetMinute, 0, 0);
+    if (nowMs >= todayTarget.getTime()) daysUntil = 7;
+  }
+  const targetMs = midnight.getTime() + daysUntil*86400000 + targetHour*3600000 + targetMinute*60000;
+  return Math.floor((targetMs - nowMs)/1000);
+}
+
+function formatCountdown(secs) {
+  if (secs === 0) return 'NOW';
+  const d = Math.floor(secs/86400);
+  const h = Math.floor((secs%86400)/3600);
+  const m = Math.floor((secs%3600)/60);
+  let s = '';
+  if (d > 0) s += d + '日 ';
+  s += String(h).padStart(2,'0') + '時間 ';
+  s += String(m).padStart(2,'0') + '分';
+  return s;
+}
+
+function formatEventCountdown(secs) {
+  if (secs <= 0) return '--:--';
+  const d = Math.floor(secs/86400);
+  const h = Math.floor((secs%86400)/3600);
+  const m = Math.floor((secs%3600)/60);
+  if (d > 0) return `${d}日 ${String(h).padStart(2,'0')}時間 ${String(m).padStart(2,'0')}分`;
+  return `${String(h).padStart(2,'0')}時間 ${String(m).padStart(2,'0')}分`;
+}
+
+function tick() {
+  const now = new Date();
+  if (settings.isUTC) {
+    const utc = new Date(now.getTime() - 9*3600000);
+    const hh = String(utc.getUTCHours()).padStart(2,'0');
+    const mm = String(utc.getUTCMinutes()).padStart(2,'0');
+    const ss = String(utc.getUTCSeconds()).padStart(2,'0');
+    document.getElementById('clock').textContent = `${hh}:${mm}:${ss}`;
+    const y = utc.getUTCFullYear();
+    const mo = String(utc.getUTCMonth()+1).padStart(2,'0');
+    const d = String(utc.getUTCDate()).padStart(2,'0');
+    document.getElementById('date').textContent = `${y}/${mo}/${d} (${DAYS_JP[utc.getUTCDay()]})`;
+  } else {
+    const hh = String(now.getHours()).padStart(2,'0');
+    const mm = String(now.getMinutes()).padStart(2,'0');
+    const ss = String(now.getSeconds()).padStart(2,'0');
+    document.getElementById('clock').textContent = `${hh}:${mm}:${ss}`;
+    const y = now.getFullYear();
+    const mo = String(now.getMonth()+1).padStart(2,'0');
+    const d = String(now.getDate()).padStart(2,'0');
+    document.getElementById('date').textContent = `${y}/${mo}/${d} (${DAYS_JP[now.getDay()]})`;
+  }
+  const sorted = SLOTS.map(s => ({...s, secs: secondsUntil(now, s)}))
+                       .sort((a,b) => a.secs - b.secs);
+  updateCards(sorted);
+
+  document.getElementById('warzone1').textContent = formatEventCountdown(secondsUntilEvent(now,1,9,30));
+  document.getElementById('warzone2').textContent = formatEventCountdown(secondsUntilEvent(now,1,13,0));
+  document.getElementById('anthill').textContent  = formatEventCountdown(secondsUntilEvent(now,2,9,0));
+  document.getElementById('evolution').textContent = formatEventCountdown(secondsUntilEvent(now,3,10,5));
+}
+
+// ===== イベント =====
+// ZONE
+document.getElementById('zone-frame').addEventListener('click', () => {
+  pendingSettings.isUTC = !pendingSettings.isUTC;
+  applyZone(pendingSettings.isUTC);
+  markDirty();
+  tick();
+});
+
+// SKIN
+document.getElementById('skin-btns').addEventListener('click', e => {
+  const cell = e.target.closest('.hex-cell');
+  if (!cell) return;
+  pendingSettings.theme = cell.dataset.theme;
+  applyTheme(pendingSettings.theme);
+  markDirty();
+});
+
+// VIEW
+document.getElementById('view-btns').addEventListener('click', e => {
+  const btn = e.target.closest('.vs-btn');
+  if (!btn) return;
+  pendingSettings.viewCount = parseInt(btn.dataset.count);
+  applyViewCount(pendingSettings.viewCount);
+  markDirty();
+});
+
+// SAVE
+document.getElementById('save-btn').addEventListener('click', () => {
+  if (!isDirty) return;
+  settings = { ...pendingSettings };
+  saveSettings();
+  markClean();
+});
+
+// ===== 初期化 =====
+loadSettings();
+applyTheme(settings.theme);
+applyZone(settings.isUTC);
+applyViewCount(settings.viewCount);
+tick();
+setInterval(tick, 1000);
+</script>
+</body>
+</html>
