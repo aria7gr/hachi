@@ -25,6 +25,7 @@ v3.0  2026.03.07  設定パネル刷新(ZONE/SKIN/VIEW/SAVE)・カウントダ�
 v3.0.1 2026.03.07 ハニカムDark中央配置・ZONE/VIEW margin調整・SAVEボタンサイズ調整
 v3.0.2 2026.03.07 ライト系テーマ時のZONE・SAVEボタン色連動(mech変数)
 v3.0.3 2026.03.07 ライト系SAVEボタン文字・枠色をペリウィンクル(#7b9fd4)に統一
+v3.1   2026.03.08 ハニカムをpointy-top横2:3:2 (A/B/C行) に変更・B2をdark固定
 v3.0  2026.03.06  設定パネル刷新(ZONE/SKIN/VIEW/SAVE)・カウントダウン3色化・表示件数可変・localStorage永続化・テーマ7色新調
 */
 
@@ -294,16 +295,18 @@ body.utc-mode .card-until {
   align-items: center;
   gap: 4px;
   cursor: pointer;
+  height: 100%;
 }
 .zone-pos-label {
   font-family: 'Orbitron', sans-serif;
   font-size: 7px; letter-spacing: 0.1em;
   color: var(--dim-text);
   transition: color 0.2s;
+  flex-shrink: 0;
 }
 .zone-pos-label.active { color: var(--cd-soon); }
 .zone-track {
-  width: 10px; height: 60px;
+  width: 10px; flex: 1;
   background: var(--mech-track);
   border: 1px solid var(--mech-track-border);
   border-radius: 2px;
@@ -327,7 +330,7 @@ body.utc-mode .card-until {
   height: 1px; background: #f59e0b66;
   transform: translateY(-50%);
 }
-.zone-wrap.utc .zone-knob { top: 42px; }
+.zone-wrap.utc .zone-knob { top: calc(100% - 18px); }
 .zone-wrap.utc .zone-pos-label.active { color: var(--countdown-utc); }
 
 /* ===== 中央 (SKIN + SAVE) ===== */
@@ -350,40 +353,42 @@ body.utc-mode .card-until {
 .tc-slate   { background: radial-gradient(circle at 35% 35%, #b8c8d8, #8898a8); }
 
 /*
-  flat-top 完全密着:
-  R=22px → W=44px, H=38px
-  hStep=33px, vStep=38px, oddOffset=19px
+  pointy-top 完全密着:
+  R=22px → W=38px, H=44px
+  hStep=38px, vStep=33px
+  A行・C行: left offset +19px
+  hive: 114×88px
 */
-.hive { position: relative; width: 110px; height: 95px; }
+.hive { position: relative; width: 114px; height: 88px; }
 .hex-cell {
   position: absolute; cursor: pointer;
-  width: 44px; height: 38px;
+  width: 38px; height: 44px;
   transition: filter 0.15s, transform 0.15s; z-index: 1;
 }
 .hex-cell:hover { filter: brightness(1.3); transform: scale(1.06); z-index: 2; }
 .hex-outer {
-  clip-path: polygon(25% 0%, 75% 0%, 100% 50%, 75% 100%, 25% 100%, 0% 50%);
+  clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
   background: var(--accent);
   width: 100%; height: 100%;
   display: flex; align-items: center; justify-content: center;
 }
 .hex-inner {
-  width: 37px; height: 32px;
-  clip-path: polygon(25% 0%, 75% 0%, 100% 50%, 75% 100%, 25% 100%, 0% 50%);
+  width: 32px; height: 37px;
+  clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
 }
 .hex-cell.active .hex-outer { background: #fff; }
 .hex-cell.active { filter: drop-shadow(0 0 5px #f59e0baa); z-index: 2; }
 
-.hive .c11 { left: 0px;  top: 19px; }
-.hive .c12 { left: 0px;  top: 57px; }
-.hive .c21 { left: 33px; top: 0px; }
-.hive .c22 { left: 33px; top: 38px; }
-.hive .c23 { left: 33px; top: 76px; }
-.hive .c31 { left: 66px; top: 19px; }
-.hive .c32 { left: 66px; top: 57px; }
+.hive .a1 { left: 19px; top:  0px; }
+.hive .a2 { left: 57px; top:  0px; }
+.hive .b1 { left:  0px; top: 33px; }
+.hive .b2 { left: 38px; top: 33px; }
+.hive .b3 { left: 76px; top: 33px; }
+.hive .c1 { left: 19px; top: 66px; }
+.hive .c2 { left: 57px; top: 66px; }
 
 /* ===== SAVE ===== */
-.save-wrap { width: 102px; margin-top: 24px; }
+.save-wrap { width: 102px; margin-top: 36px; }
 .save-btn {
   width: 100%; height: 26px;
   background: var(--mech-bg);
@@ -610,13 +615,13 @@ body.utc-mode .card-until {
         <!-- 中央 (SKIN + SAVE) -->
         <div class="center-wrap">
           <div class="hive" id="skin-btns">
-            <div class="hex-cell c11" data-theme="navy"><div class="hex-outer"><div class="hex-inner tc-navy"></div></div></div>
-            <div class="hex-cell c12" data-theme="crimson"><div class="hex-outer"><div class="hex-inner tc-crimson"></div></div></div>
-            <div class="hex-cell c21" data-theme="forest"><div class="hex-outer"><div class="hex-inner tc-forest"></div></div></div>
-            <div class="hex-cell c22 active" data-theme="dark"><div class="hex-outer"><div class="hex-inner tc-dark"></div></div></div>
-            <div class="hex-cell c23" data-theme="sand"><div class="hex-outer"><div class="hex-inner tc-sand"></div></div></div>
-            <div class="hex-cell c31" data-theme="warm"><div class="hex-outer"><div class="hex-inner tc-warm"></div></div></div>
-            <div class="hex-cell c32" data-theme="slate"><div class="hex-outer"><div class="hex-inner tc-slate"></div></div></div>
+            <div class="hex-cell a1" data-theme="navy"><div class="hex-outer"><div class="hex-inner tc-navy"></div></div></div>
+            <div class="hex-cell a2" data-theme="forest"><div class="hex-outer"><div class="hex-inner tc-forest"></div></div></div>
+            <div class="hex-cell b1" data-theme="crimson"><div class="hex-outer"><div class="hex-inner tc-crimson"></div></div></div>
+            <div class="hex-cell b2 active" data-theme="dark"><div class="hex-outer"><div class="hex-inner tc-dark"></div></div></div>
+            <div class="hex-cell b3" data-theme="warm"><div class="hex-outer"><div class="hex-inner tc-warm"></div></div></div>
+            <div class="hex-cell c1" data-theme="sand"><div class="hex-outer"><div class="hex-inner tc-sand"></div></div></div>
+            <div class="hex-cell c2" data-theme="slate"><div class="hex-outer"><div class="hex-inner tc-slate"></div></div></div>
           </div>
           <div class="save-wrap">
             <div class="save-btn" id="save-btn">
@@ -674,7 +679,7 @@ body.utc-mode .card-until {
 </div>
 
 <!-- バージョン表示 -->
-<div class="version">Mar 07 '26 🐕 v3.0.3</div>
+<div class="version">Mar 08 '26 🐕 v3.1</div>
 
 <script>
 const SLOTS = [
