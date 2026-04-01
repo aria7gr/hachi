@@ -893,11 +893,22 @@ function updateCards(sorted) {
     const untilEl = document.getElementById(`c-until-${rank}`);
     if (!dayEl) continue;
     const active = item.secs === 0;
-    dayEl.innerHTML = item.label + (active ? ' <span class="now-badge">NOW</span>' : '');
-    slotEl.textContent  = item.disp;
+
+    // UTC/JST切替
+    let displayLabel, displayDisp;
+    if (settings.isUTC) {
+      const utcSlot = toUTCSlot(item);
+      displayLabel = utcSlot.label;
+      displayDisp  = utcSlot.disp;
+    } else {
+      displayLabel = item.label;
+      displayDisp  = item.disp;
+    }
+
+    dayEl.innerHTML = displayLabel + (active ? ' <span class="now-badge">NOW</span>' : '');
+    slotEl.textContent  = displayDisp;
     labelEl.textContent = (i === nextIndex) ? 'Next' : '';
     untilEl.textContent = formatCountdown(item.secs);
-    // 3色クラス付与
     untilEl.className = 'card-until ' + getCdClass(i, sorted);
   }
 }
@@ -952,15 +963,45 @@ function formatEventCountdown(secs) {
   return `${String(h).padStart(2,'0')}時間 ${String(m).padStart(2,'0')}分`;
 }
 
+// ===== UTC変換ヘルパー =====
+function toUTCSlot(slot) {
+  // JSTスロット (day, h) をUTCに変換 (-9時間)
+  const DAYS_JP_FULL = ['日曜日','月曜日','火曜日','水曜日','木曜日','金曜日','土曜日'];
+  const DAYS_JP_SHORT = ['日','月','火','水','木','金','土'];
+  let h = slot.h - 9;
+  let day = slot.day;
+  if (h < 0) { h += 24; day = (day + 6) % 7; }
+  const startH = h + 5/60; // +5分 (スロット開始)
+  const endH = h + 1; // +1時間
+  const fmtH = (v) => {
+    const hh = Math.floor(v);
+    const mm = Math.round((v - hh) * 60);
+    return `${String(hh).padStart(2,'0')}:${String(mm).padStart(2,'0')}`;
+  };
+  const startStr = fmtH(h) + ':05';
+  const endHH = h + 1;
+  const endStr = String(endHH).padStart(2,'0') + ':00';
+  return {
+    label: DAYS_JP_FULL[day],
+    disp: `${String(h).padStart(2,' ')}:05-${String(endHH).padStart(2,'0')}:00`,
+    dayShort: DAYS_JP_SHORT[day],
+    hUTC: h,
+  };
+}
+
+function toUTCEventTime(jstDay, jstHour, jstMinute) {
+  const DAYS_JP_SHORT = ['日','月','火','水','木','金','土'];
+  let h = jstHour - 9;
+  let m = jstMinute;
+  let day = jstDay;
+  if (h < 0) { h += 24; day = (day + 6) % 7; }
+  return `${DAYS_JP_SHORT[day]} ${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}`;
+}
+
 function tick() {
   const nowLocal = new Date();
-  // UTCモード時はカウントダウン計算もUTC基準の時刻で行う
-  const now = settings.isUTC
-    ? new Date(Date.UTC(
-        nowLocal.getUTCFullYear(), nowLocal.getUTCMonth(), nowLocal.getUTCDate(),
-        nowLocal.getUTCHours(), nowLocal.getUTCMinutes(), nowLocal.getUTCSeconds()
-      ))
-    : nowLocal;
+  // カウントダウン計算は常にJST (nowLocal) 基準
+  const now = nowLocal;
 
   if (settings.isUTC) {
     const hh = String(nowLocal.getUTCHours()).padStart(2,'0');
@@ -981,6 +1022,8 @@ function tick() {
     const d  = String(nowLocal.getDate()).padStart(2,'0');
     document.getElementById('date').textContent = `${y}/${mo}/${d} (${DAYS_JP[nowLocal.getDay()]})`;
   }
+
+  // カウントダウンは常にJST基準
   const sorted = SLOTS.map(s => ({...s, secs: secondsUntil(now, s)}))
                        .sort((a,b) => a.secs - b.secs);
   updateCards(sorted);
@@ -989,6 +1032,18 @@ function tick() {
   document.getElementById('warzone2').textContent = formatEventCountdown(secondsUntilEvent(now,1,13,0));
   document.getElementById('anthill').textContent  = formatEventCountdown(secondsUntilEvent(now,2,9,0));
   document.getElementById('evolution').textContent = formatEventCountdown(secondsUntilEvent(now,3,10,5));
+
+  // イベントラベルの時刻をUTC/JST切替
+  const isUTC = settings.isUTC;
+  document.querySelector('#warzone1').closest('.event-timer').querySelector('.event-label').textContent =
+    isUTC ? `WARZONE ENTRY (${toUTCEventTime(1,9,30)} / ${toUTCEventTime(1,13,0)} UTC)`
+          : 'WARZONE ENTRY (月 09:30 / 13:00 JST)';
+  document.querySelector('#anthill').closest('.event-timer').querySelector('.event-label').textContent =
+    isUTC ? `ANT HILL DEVELOPMENT (${toUTCEventTime(2,9,0)} UTC)`
+          : 'ANT HILL DEVELOPMENT (火 09:00 JST)';
+  document.querySelector('#evolution').closest('.event-timer').querySelector('.event-label').textContent =
+    isUTC ? `NEXT EVOLUTION TIME (${toUTCEventTime(3,10,5)} UTC)`
+          : 'NEXT EVOLUTION TIME (水 10:05 JST)';
 }
 
 // ===== イベント =====
