@@ -3,8 +3,25 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Colony Dashboard [Hachi] - The Ants</title>
+<title>C.D.[-Hachi-]</title>
 <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🐕</text></svg>">
+<link rel="apple-touch-icon" id="apple-touch-icon" href="">
+<script>
+(function(){
+  const c = document.createElement('canvas');
+  c.width = c.height = 180;
+  const ctx = c.getContext('2d');
+  // 背景: 蜂蜜オレンジ
+  ctx.fillStyle = '#f59e0b';
+  ctx.fillRect(0, 0, 180, 180);
+  // 絵文字
+  ctx.font = '120px serif';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillText('🐕', 90, 95);
+  document.getElementById('apple-touch-icon').href = c.toDataURL('image/png');
+})();
+</script>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;700&family=Orbitron:wght@700&family=Roboto+Mono:wght@700&display=swap">
 <style>
 /*
@@ -26,6 +43,8 @@ v3.0.1 2026.03.07 ハニカムDark中央配置・ZONE/VIEW margin調整・SAVE�
 v3.0.2 2026.03.07 ライト系テーマ時のZONE・SAVEボタン色連動(mech変数)
 v3.0.3 2026.03.07 ライト系SAVEボタン文字・枠色をペリウィンクル(#7b9fd4)に統一
 v3.1   2026.03.08 ハニカムをpointy-top横2:3:2 (A/B/C行) に変更・B2をdark固定
+v3.2   2026.03.15 全7テーマ配色見直し・輝度5段階分離・--title-hachi変数追加・タイトル・ブックマーク表記変更・コンパネZONE/VIEWmargin調整・ハニカムカラー配置変更(PatternB)
+v3.2.1 2026.04.01 UTC連動修正 (カウントダウン・イベントタイマー)・apple-touch-icon追加
 v3.0  2026.03.06  設定パネル刷新(ZONE/SKIN/VIEW/SAVE)・カウントダウン3色化・表示件数可変・localStorage永続化・テーマ7色新調
 */
 
@@ -52,114 +71,139 @@ v3.0  2026.03.06  設定パネル刷新(ZONE/SKIN/VIEW/SAVE)・カウントダ�
   --mech-knob:         linear-gradient(180deg, #707070 0%, #404040 100%);
   --mech-save-border:  #404040;
   --mech-save-text:    #686868;
+  --title-hachi:       #d0d0d0;
 }
 [data-theme="navy"] {
-  --bg:       #1a2a3a;
-  --surface:  #1f3347;
-  --card1:    #243c54;
-  --card2:    #203650;
-  --border:   #2e4d6a;
-  --accent:   #f59e0b;
-  --text:     #e8f4ff;
-  --sub-text: #6a90b0;
-  --dim-text: #3a5570;
+  --bg:       #0e1c2e;
+  --surface:  #162436;
+  --card1:    #1c3048;
+  --card2:    #162436;
+  --border:   #3a6090;
+  --accent:   #5bb8f5;
+  --text:     #d0e8ff;
+  --sub-text: #7aaed4;
+  --dim-text: #4a7090;
   --cd-soon:  #34d399;
-  --cd-near:  #6a90b0;
+  --cd-near:  #8ab8d8;
   --cd-far:   #7b9fd4;
   --countdown-utc: #fde047;
+  --mech-bg:           #0a1420;
+  --mech-track:        #162436;
+  --mech-track-border: #3a6090;
+  --mech-knob:         linear-gradient(180deg, #5bb8f5 0%, #1c3048 100%);
+  --mech-save-border:  #3a6090;
+  --mech-save-text:    #4a7090;
+  --title-hachi:       #c8dff0;
 }
 [data-theme="forest"] {
-  --bg:       #1a2a1f;
-  --surface:  #1f331f;
-  --card1:    #243c24;
-  --card2:    #203620;
-  --border:   #2e4d2e;
-  --accent:   #f59e0b;
-  --text:     #e0f4e4;
-  --sub-text: #60906a;
-  --dim-text: #35573a;
+  --bg:       #0e1e12;
+  --surface:  #162418;
+  --card1:    #1c3020;
+  --card2:    #162418;
+  --border:   #3a7248;
+  --accent:   #6dba7a;
+  --text:     #d4f0da;
+  --sub-text: #7abf8a;
+  --dim-text: #4a8058;
   --cd-soon:  #34d399;
-  --cd-near:  #60906a;
+  --cd-near:  #7abf8a;
   --cd-far:   #7b9fd4;
   --countdown-utc: #fde047;
+  --mech-bg:           #0a1610;
+  --mech-track:        #162418;
+  --mech-track-border: #3a7248;
+  --mech-knob:         linear-gradient(180deg, #6dba7a 0%, #1c3020 100%);
+  --mech-save-border:  #3a7248;
+  --mech-save-text:    #4a8058;
+  --title-hachi:       #b8d8c0;
 }
 [data-theme="crimson"] {
-  --bg:       #2a1018;
-  --surface:  #331520;
-  --card1:    #3c1c28;
-  --card2:    #361824;
-  --border:   #502030;
-  --accent:   #f59e0b;
-  --text:     #ffe8ee;
-  --sub-text: #a06070;
-  --dim-text: #704050;
+  --bg:       #1e0810;
+  --surface:  #280e18;
+  --card1:    #321420;
+  --card2:    #280e18;
+  --border:   #7a3048;
+  --accent:   #d4804a;
+  --text:     #f8e0e4;
+  --sub-text: #c08090;
+  --dim-text: #906070;
   --cd-soon:  #34d399;
-  --cd-near:  #a06070;
+  --cd-near:  #c08090;
   --cd-far:   #7b9fd4;
   --countdown-utc: #fde047;
+  --mech-bg:           #160610;
+  --mech-track:        #280e18;
+  --mech-track-border: #7a3048;
+  --mech-knob:         linear-gradient(180deg, #d4804a 0%, #321420 100%);
+  --mech-save-border:  #7a3048;
+  --mech-save-text:    #906070;
+  --title-hachi:       #e8c8c8;
 }
 [data-theme="warm"] {
-  --bg:       #e8e0d0;
-  --surface:  #f0e8d8;
-  --card1:    #faf0e0;
+  --bg:       #f6f0e4;
+  --surface:  #fdf8f0;
+  --card1:    #fff8f0;
   --card2:    #ece4d4;
-  --border:   #c8b898;
-  --accent:   #b8860b;
-  --text:     #3a2a1a;
-  --sub-text: #6a5a4a;
-  --dim-text: #a0907a;
-  --cd-soon:  #16a34a;
-  --cd-near:  #6a5a4a;
-  --cd-far:   #4a6fa5;
+  --border:   #7a5030;
+  --accent:   #c0622a;
+  --text:     #1e100a;
+  --sub-text: #5a3820;
+  --dim-text: #907060;
+  --cd-soon:  #0f7a30;
+  --cd-near:  #5a3820;
+  --cd-far:   #3a6090;
   --countdown-utc: #ca8a04;
-  --mech-bg:           #d8cbb8;
-  --mech-track:        #c8b8a0;
-  --mech-track-border: #b0a080;
+  --mech-bg:           #ece4d4;
+  --mech-track:        #d8cbb8;
+  --mech-track-border: #7a5030;
   --mech-knob:         linear-gradient(180deg, #c0a878 0%, #8a7050 100%);
   --mech-save-border:  #7b9fd4;
   --mech-save-text:    #7b9fd4;
+  --title-hachi:       #3a2010;
 }
 [data-theme="sand"] {
-  --bg:       #d4c8a8;
-  --surface:  #ddd0b0;
-  --card1:    #e8dac0;
-  --card2:    #d8ccac;
-  --border:   #b0a070;
-  --accent:   #8b6914;
-  --text:     #2a2010;
-  --sub-text: #5a4a2a;
-  --dim-text: #8a7a5a;
-  --cd-soon:  #16a34a;
-  --cd-near:  #5a4a2a;
-  --cd-far:   #4a6fa5;
+  --bg:       #f2ead8;
+  --surface:  #fdf6e8;
+  --card1:    #fff8ee;
+  --card2:    #ede4cc;
+  --border:   #8a6a30;
+  --accent:   #9a6010;
+  --text:     #1e1408;
+  --sub-text: #5a3e18;
+  --dim-text: #8a6a40;
+  --cd-soon:  #0f7a30;
+  --cd-near:  #5a3e18;
+  --cd-far:   #3a6090;
   --countdown-utc: #ca8a04;
-  --mech-bg:           #c0b090;
-  --mech-track:        #b0a080;
-  --mech-track-border: #907860;
+  --mech-bg:           #ede4cc;
+  --mech-track:        #d8ccb0;
+  --mech-track-border: #8a6a30;
   --mech-knob:         linear-gradient(180deg, #a08858 0%, #706040 100%);
   --mech-save-border:  #7b9fd4;
   --mech-save-text:    #7b9fd4;
+  --title-hachi:       #4a3010;
 }
 [data-theme="slate"] {
-  --bg:       #b8c8d8;
-  --surface:  #c4d4e4;
-  --card1:    #d0e0f0;
-  --card2:    #bccede;
-  --border:   #8898a8;
-  --accent:   #2a5a8a;
-  --text:     #0a1a2a;
-  --sub-text: #2a4a6a;
-  --dim-text: #5a7a9a;
-  --cd-soon:  #16a34a;
-  --cd-near:  #2a4a6a;
-  --cd-far:   #1a4a7a;
+  --bg:       #dce8f4;
+  --surface:  #eaf2fc;
+  --card1:    #f0f8ff;
+  --card2:    #e0ecf8;
+  --border:   #6090c0;
+  --accent:   #1a5090;
+  --text:     #0a1e32;
+  --sub-text: #2a5888;
+  --dim-text: #5a80a8;
+  --cd-soon:  #0f8a3a;
+  --cd-near:  #2a5888;
+  --cd-far:   #3a70a8;
   --countdown-utc: #ca8a04;
-  --mech-bg:           #90a8c0;
-  --mech-track:        #8098b0;
-  --mech-track-border: #6080a0;
+  --mech-bg:           #c8daea;
+  --mech-track:        #b8cede;
+  --mech-track-border: #6090c0;
   --mech-knob:         linear-gradient(180deg, #7898b8 0%, #486888 100%);
   --mech-save-border:  #7b9fd4;
   --mech-save-text:    #7b9fd4;
+  --title-hachi:       #2a3a4a;
 }
 
 body {
@@ -189,7 +233,7 @@ body {
   text-align: center;
   margin-bottom: 16px;
 }
-.title-hachi { color: #d0d0d0; }
+.title-hachi { color: var(--title-hachi, #d0d0d0); }
 
 /* ===== バージョン表示 ===== */
 .version {
@@ -213,6 +257,7 @@ body {
 }
 @media (max-width: 768px) {
   .main-layout { grid-template-columns: 1fr; }
+  .title-hachi { display: block; }
 }
 
 /* ===== 左カラム ===== */
@@ -282,7 +327,7 @@ body.utc-mode .card-until {
   flex-direction: column;
   align-items: center;
   flex-shrink: 0;
-  margin-left: 28px;
+  margin-left: 44px;
 }
 .zone-frame {
   width: 36px;
@@ -344,13 +389,13 @@ body.utc-mode .card-until {
 }
 
 /* ===== SKIN ハニカム ===== */
-.tc-dark    { background: radial-gradient(circle at 35% 35%, #888, #222); }
-.tc-navy    { background: radial-gradient(circle at 35% 35%, #4a6fa5, #1a2a3a); }
-.tc-forest  { background: radial-gradient(circle at 35% 35%, #4a7c59, #1a2a1f); }
-.tc-crimson { background: radial-gradient(circle at 35% 35%, #a05060, #2a1018); }
-.tc-warm    { background: radial-gradient(circle at 35% 35%, #e8e0d0, #c8b898); }
-.tc-sand    { background: radial-gradient(circle at 35% 35%, #d4c8a8, #b0a070); }
-.tc-slate   { background: radial-gradient(circle at 35% 35%, #b8c8d8, #8898a8); }
+.tc-dark    { background: linear-gradient(135deg, #a0a0a0 0%, #555 50%, #1a1a1a 100%); }
+.tc-navy    { background: linear-gradient(135deg, #7ad4ff 0%, #3090c8 50%, #0e1c2e 100%); }
+.tc-forest  { background: linear-gradient(135deg, #90e098 0%, #4a9858 50%, #0e1e12 100%); }
+.tc-crimson { background: linear-gradient(135deg, #f0a878 0%, #c05828 50%, #1e0810 100%); }
+.tc-warm    { background: linear-gradient(135deg, #fffaf4 0%, #e8c8a0 50%, #a85028 100%); }
+.tc-sand    { background: linear-gradient(135deg, #fffff0 0%, #d8c070 50%, #806010 100%); }
+.tc-slate   { background: linear-gradient(135deg, #f0f8ff 0%, #80b0d8 50%, #1a4080 100%); }
 
 /*
   pointy-top 完全密着:
@@ -365,19 +410,23 @@ body.utc-mode .card-until {
   width: 38px; height: 44px;
   transition: filter 0.15s, transform 0.15s; z-index: 1;
 }
-.hex-cell:hover { filter: brightness(1.3); transform: scale(1.06); z-index: 2; }
+.hex-cell:hover { filter: brightness(1.2); transform: scale(1.06); z-index: 2; }
 .hex-outer {
   clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
-  background: var(--accent);
+  background: linear-gradient(145deg, #fcd34d 0%, #f59e0b 35%, #b45309 100%);
   width: 100%; height: 100%;
   display: flex; align-items: center; justify-content: center;
+  filter: drop-shadow(0 1px 2px rgba(0,0,0,0.5));
 }
 .hex-inner {
-  width: 32px; height: 37px;
+  width: 28px; height: 33px;
   clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
 }
-.hex-cell.active .hex-outer { background: #fff; }
-.hex-cell.active { filter: drop-shadow(0 0 5px #f59e0baa); z-index: 2; }
+.hex-cell.active .hex-outer {
+  background: linear-gradient(145deg, #fef9c3 0%, #ffffff 40%, #fef3c7 100%);
+  filter: drop-shadow(0 0 8px #f59e0bdd);
+}
+.hex-cell.active { z-index: 2; }
 
 .hive .a1 { left: 19px; top:  0px; }
 .hive .a2 { left: 57px; top:  0px; }
@@ -430,7 +479,7 @@ body.utc-mode .card-until {
 }
 
 /* ===== VIEW ===== */
-.view-wrap { flex-shrink: 0; margin-right: 28px; }
+.view-wrap { flex-shrink: 0; margin-right: 44px; }
 .view-seg {
   border: 1px solid var(--border);
   border-radius: 4px;
@@ -584,7 +633,7 @@ body.utc-mode .card-until {
 <body>
 <div class="wrapper">
 
-  <div class="title">THE ANTS &mdash; <span class="title-hachi">HACHI</span></div>
+  <div class="title">COLONY DASHBOARD <span class="title-hachi">-HACHI-</span></div>
 
   <div class="main-layout">
 
@@ -615,13 +664,13 @@ body.utc-mode .card-until {
         <!-- 中央 (SKIN + SAVE) -->
         <div class="center-wrap">
           <div class="hive" id="skin-btns">
-            <div class="hex-cell a1" data-theme="navy"><div class="hex-outer"><div class="hex-inner tc-navy"></div></div></div>
-            <div class="hex-cell a2" data-theme="forest"><div class="hex-outer"><div class="hex-inner tc-forest"></div></div></div>
-            <div class="hex-cell b1" data-theme="crimson"><div class="hex-outer"><div class="hex-inner tc-crimson"></div></div></div>
+            <div class="hex-cell a1" data-theme="warm"><div class="hex-outer"><div class="hex-inner tc-warm"></div></div></div>
+            <div class="hex-cell a2" data-theme="slate"><div class="hex-outer"><div class="hex-inner tc-slate"></div></div></div>
+            <div class="hex-cell b1" data-theme="sand"><div class="hex-outer"><div class="hex-inner tc-sand"></div></div></div>
             <div class="hex-cell b2 active" data-theme="dark"><div class="hex-outer"><div class="hex-inner tc-dark"></div></div></div>
-            <div class="hex-cell b3" data-theme="warm"><div class="hex-outer"><div class="hex-inner tc-warm"></div></div></div>
-            <div class="hex-cell c1" data-theme="sand"><div class="hex-outer"><div class="hex-inner tc-sand"></div></div></div>
-            <div class="hex-cell c2" data-theme="slate"><div class="hex-outer"><div class="hex-inner tc-slate"></div></div></div>
+            <div class="hex-cell b3" data-theme="forest"><div class="hex-outer"><div class="hex-inner tc-forest"></div></div></div>
+            <div class="hex-cell c1" data-theme="crimson"><div class="hex-outer"><div class="hex-inner tc-crimson"></div></div></div>
+            <div class="hex-cell c2" data-theme="navy"><div class="hex-outer"><div class="hex-inner tc-navy"></div></div></div>
           </div>
           <div class="save-wrap">
             <div class="save-btn" id="save-btn">
@@ -679,7 +728,7 @@ body.utc-mode .card-until {
 </div>
 
 <!-- バージョン表示 -->
-<div class="version">Mar 08 '26 🐕 v3.1</div>
+<div class="version">Apr 01 '26 🐕 v3.2.1</div>
 
 <script>
 const SLOTS = [
@@ -904,26 +953,33 @@ function formatEventCountdown(secs) {
 }
 
 function tick() {
-  const now = new Date();
+  const nowLocal = new Date();
+  // UTCモード時はカウントダウン計算もUTC基準の時刻で行う
+  const now = settings.isUTC
+    ? new Date(Date.UTC(
+        nowLocal.getUTCFullYear(), nowLocal.getUTCMonth(), nowLocal.getUTCDate(),
+        nowLocal.getUTCHours(), nowLocal.getUTCMinutes(), nowLocal.getUTCSeconds()
+      ))
+    : nowLocal;
+
   if (settings.isUTC) {
-    const utc = new Date(now.getTime() - 9*3600000);
-    const hh = String(utc.getUTCHours()).padStart(2,'0');
-    const mm = String(utc.getUTCMinutes()).padStart(2,'0');
-    const ss = String(utc.getUTCSeconds()).padStart(2,'0');
+    const hh = String(nowLocal.getUTCHours()).padStart(2,'0');
+    const mm = String(nowLocal.getUTCMinutes()).padStart(2,'0');
+    const ss = String(nowLocal.getUTCSeconds()).padStart(2,'0');
     document.getElementById('clock').textContent = `${hh}:${mm}:${ss}`;
-    const y = utc.getUTCFullYear();
-    const mo = String(utc.getUTCMonth()+1).padStart(2,'0');
-    const d = String(utc.getUTCDate()).padStart(2,'0');
-    document.getElementById('date').textContent = `${y}/${mo}/${d} (${DAYS_JP[utc.getUTCDay()]})`;
+    const y  = nowLocal.getUTCFullYear();
+    const mo = String(nowLocal.getUTCMonth()+1).padStart(2,'0');
+    const d  = String(nowLocal.getUTCDate()).padStart(2,'0');
+    document.getElementById('date').textContent = `${y}/${mo}/${d} (${DAYS_JP[nowLocal.getUTCDay()]})`;
   } else {
-    const hh = String(now.getHours()).padStart(2,'0');
-    const mm = String(now.getMinutes()).padStart(2,'0');
-    const ss = String(now.getSeconds()).padStart(2,'0');
+    const hh = String(nowLocal.getHours()).padStart(2,'0');
+    const mm = String(nowLocal.getMinutes()).padStart(2,'0');
+    const ss = String(nowLocal.getSeconds()).padStart(2,'0');
     document.getElementById('clock').textContent = `${hh}:${mm}:${ss}`;
-    const y = now.getFullYear();
-    const mo = String(now.getMonth()+1).padStart(2,'0');
-    const d = String(now.getDate()).padStart(2,'0');
-    document.getElementById('date').textContent = `${y}/${mo}/${d} (${DAYS_JP[now.getDay()]})`;
+    const y  = nowLocal.getFullYear();
+    const mo = String(nowLocal.getMonth()+1).padStart(2,'0');
+    const d  = String(nowLocal.getDate()).padStart(2,'0');
+    document.getElementById('date').textContent = `${y}/${mo}/${d} (${DAYS_JP[nowLocal.getDay()]})`;
   }
   const sorted = SLOTS.map(s => ({...s, secs: secondsUntil(now, s)}))
                        .sort((a,b) => a.secs - b.secs);
