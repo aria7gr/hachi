@@ -47,6 +47,7 @@ v3.2   2026.03.15 全7テーマ配色見直し・輝度5段階分離・--title-h
 v3.2.1 2026.08.11 UTC連動修正 (カウントダウン・イベントタイマー)・apple-touch-icon追加
 v3.2.2 2026.08.11 ZONEレバー即時反映・SAVE不要に変更
 v3.3   2026.08.11 兵隊アリ孵化リワード3 (4.24M/5.2M) バッジ表示追加
+v3.4   2026.09.18 DAILY UPDATE追加 (毎日9:00/9:30 JSTカウントダウン)・現在時刻バー下に新設・パステルピンク基調・全7テーマ対応
 v3.0  2026.03.06  設定パネル刷新(ZONE/SKIN/VIEW/SAVE)・カウントダウン3色化・表示件数可変・localStorage永続化・テーマ7色新調
 */
 
@@ -74,6 +75,8 @@ v3.0  2026.03.06  設定パネル刷新(ZONE/SKIN/VIEW/SAVE)・カウントダ�
   --mech-save-border:  #404040;
   --mech-save-text:    #686868;
   --title-hachi:       #d0d0d0;
+  --daily-border:      #d98fa8;
+  --daily-time:        #d8d8d8;
 }
 [data-theme="navy"] {
   --bg:       #0e1c2e;
@@ -96,6 +99,8 @@ v3.0  2026.03.06  設定パネル刷新(ZONE/SKIN/VIEW/SAVE)・カウントダ�
   --mech-save-border:  #3a6090;
   --mech-save-text:    #4a7090;
   --title-hachi:       #c8dff0;
+  --daily-border:      #e0a0ba;
+  --daily-time:        #d8e4ee;
 }
 [data-theme="forest"] {
   --bg:       #0e1e12;
@@ -118,6 +123,8 @@ v3.0  2026.03.06  設定パネル刷新(ZONE/SKIN/VIEW/SAVE)・カウントダ�
   --mech-save-border:  #3a7248;
   --mech-save-text:    #4a8058;
   --title-hachi:       #b8d8c0;
+  --daily-border:      #e0a0ba;
+  --daily-time:        #dce8de;
 }
 [data-theme="crimson"] {
   --bg:       #1e0810;
@@ -140,6 +147,8 @@ v3.0  2026.03.06  設定パネル刷新(ZONE/SKIN/VIEW/SAVE)・カウントダ�
   --mech-save-border:  #7a3048;
   --mech-save-text:    #906070;
   --title-hachi:       #e8c8c8;
+  --daily-border:      #e888ac;
+  --daily-time:        #f0d8e0;
 }
 [data-theme="warm"] {
   --bg:       #f6f0e4;
@@ -162,6 +171,8 @@ v3.0  2026.03.06  設定パネル刷新(ZONE/SKIN/VIEW/SAVE)・カウントダ�
   --mech-save-border:  #7b9fd4;
   --mech-save-text:    #7b9fd4;
   --title-hachi:       #3a2010;
+  --daily-border:      #b5527a;
+  --daily-time:        #2a1608;
 }
 [data-theme="sand"] {
   --bg:       #f2ead8;
@@ -184,6 +195,8 @@ v3.0  2026.03.06  設定パネル刷新(ZONE/SKIN/VIEW/SAVE)・カウントダ�
   --mech-save-border:  #7b9fd4;
   --mech-save-text:    #7b9fd4;
   --title-hachi:       #4a3010;
+  --daily-border:      #b5567a;
+  --daily-time:        #2a1a10;
 }
 [data-theme="slate"] {
   --bg:       #dce8f4;
@@ -206,6 +219,8 @@ v3.0  2026.03.06  設定パネル刷新(ZONE/SKIN/VIEW/SAVE)・カウントダ�
   --mech-save-border:  #7b9fd4;
   --mech-save-text:    #7b9fd4;
   --title-hachi:       #2a3a4a;
+  --daily-border:      #a8577e;
+  --daily-time:        #14202c;
 }
 
 body {
@@ -301,6 +316,50 @@ body {
   color: var(--text);
   letter-spacing: 0.08em;
   transition: color 0.3s;
+}
+
+/* ===== DAILY UPDATE (毎日9:00/9:30カウントダウン) ===== */
+.daily-bar {
+  background: var(--surface);
+  border: 2px solid var(--daily-border);
+  border-radius: 8px;
+  padding: 10px 14px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.daily-label {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  color: var(--daily-border);
+}
+.daily-times {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+}
+.daily-times .box {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.daily-times .t {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--daily-time);
+  letter-spacing: 0.02em;
+}
+.daily-times .cap {
+  font-size: 7px;
+  color: var(--daily-border);
+  letter-spacing: 0.05em;
+}
+.daily-times .sep {
+  font-size: 12px;
+  color: var(--dim-text);
+  margin: 0 2px;
 }
 
 /* UTC時のカウントダウン色変更 */
@@ -663,6 +722,16 @@ body.utc-mode .card-until {
         <div class="clock-time" id="clock">--:--:--</div>
       </div>
 
+      <!-- DAILY UPDATE -->
+      <div class="daily-bar">
+        <div class="daily-label">DAILY UPDATE</div>
+        <div class="daily-times">
+          <div class="box"><span class="t" id="daily1">--:--:--</span><span class="cap" id="daily1-cap">09:00</span></div>
+          <span class="sep">/</span>
+          <div class="box"><span class="t" id="daily2">--:--:--</span><span class="cap" id="daily2-cap">09:30</span></div>
+        </div>
+      </div>
+
       <!-- 設定パネル -->
       <div class="ctrl-panel">
 
@@ -744,7 +813,7 @@ body.utc-mode .card-until {
 </div>
 
 <!-- バージョン表示 -->
-<div class="version">Aug 11 '26 🐕 v3.3</div>
+<div class="version">Sep 18 '26 🐕 v3.4</div>
 
 <script>
 const SLOTS = [
@@ -962,6 +1031,23 @@ function secondsUntilEvent(now, targetDay, targetHour, targetMinute) {
   return Math.floor((targetMs - nowMs)/1000);
 }
 
+// 曜日を問わない毎日の指定時刻までの秒数 (JST基準)
+function secondsUntilDaily(now, targetHour, targetMinute) {
+  const nowMs = now.getTime();
+  const midnight = new Date(now);
+  midnight.setHours(0,0,0,0);
+  let targetMs = midnight.getTime() + targetHour*3600000 + targetMinute*60000;
+  if (nowMs >= targetMs) targetMs += 86400000;
+  return Math.floor((targetMs - nowMs)/1000);
+}
+
+function formatDailyCountdown(secs) {
+  const h = Math.floor(secs/3600);
+  const m = Math.floor((secs%3600)/60);
+  const s = secs%60;
+  return `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+}
+
 function formatCountdown(secs) {
   if (secs === 0) return 'NOW';
   const d = Math.floor(secs/86400);
@@ -1018,6 +1104,13 @@ function toUTCEventTime(jstDay, jstHour, jstMinute) {
   return `${DAYS_JP_SHORT[day]} ${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}`;
 }
 
+// 曜日を問わない時刻のみのUTC変換 (キャプション表示用)
+function toUTCTimeOnly(jstHour, jstMinute) {
+  let h = jstHour - 9;
+  if (h < 0) h += 24;
+  return `${String(h).padStart(2,'0')}:${String(jstMinute).padStart(2,'0')}`;
+}
+
 function tick() {
   const nowLocal = new Date();
   // カウントダウン計算は常にJST (nowLocal) 基準
@@ -1052,6 +1145,12 @@ function tick() {
   document.getElementById('warzone2').textContent = formatEventCountdown(secondsUntilEvent(now,1,13,0));
   document.getElementById('anthill').textContent  = formatEventCountdown(secondsUntilEvent(now,2,9,0));
   document.getElementById('evolution').textContent = formatEventCountdown(secondsUntilEvent(now,3,10,5));
+
+  // DAILY UPDATE (毎日9:00 / 9:30 JST までのカウントダウン、常にJST基準で計算)
+  document.getElementById('daily1').textContent = formatDailyCountdown(secondsUntilDaily(now,9,0));
+  document.getElementById('daily2').textContent = formatDailyCountdown(secondsUntilDaily(now,9,30));
+  document.getElementById('daily1-cap').textContent = settings.isUTC ? toUTCTimeOnly(9,0)  : '09:00';
+  document.getElementById('daily2-cap').textContent = settings.isUTC ? toUTCTimeOnly(9,30) : '09:30';
 
   // イベントラベルの時刻をUTC/JST切替
   const isUTC = settings.isUTC;
