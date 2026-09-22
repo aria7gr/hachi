@@ -49,6 +49,8 @@ v3.2.2 2026.08.11 ZONEレバー即時反映・SAVE不要に変更
 v3.3   2026.08.11 兵隊アリ孵化リワード3 (4.24M/5.2M) バッジ表示追加
 v3.4   2026.09.18 DAILY UPDATE追加 (毎日9:00/9:30 JSTカウントダウン)・現在時刻バー下に新設・パステルピンク基調・全7テーマ対応
 v3.4.1 2026.09.18 DAILY UPDATEを分単位表示・等幅フォントに変更、フォントサイズ拡大・VIEW範囲を4-9に変更 (デフォルト9)・PC版9枚選択時に左右カラム高さを自動同期
+v3.4.2 2026.09.18 DAILY UPDATE表記を「n時間n分」形式に変更・フォントをOrbitronに統一(既存イベントタイマーと合わせ、現在時刻とは差別化)
+v3.4.3 2026.09.18 DAILY UPDATE表記を既存カウントダウンと統一 (ゼロ埋め2桁・時間分間にスペース)
 v3.0  2026.03.06  設定パネル刷新(ZONE/SKIN/VIEW/SAVE)・カウントダウン3色化・表示件数可変・localStorage永続化・テーマ7色新調
 */
 
@@ -346,11 +348,12 @@ body {
   align-items: center;
 }
 .daily-times .t {
-  font-family: 'Roboto Mono', monospace;
-  font-size: 24px;
+  font-family: 'Orbitron', sans-serif;
+  font-size: 16px;
   font-weight: 700;
   color: var(--daily-time);
   letter-spacing: 0.02em;
+  white-space: nowrap;
 }
 .daily-times .cap {
   font-size: 7px;
@@ -739,9 +742,9 @@ body.utc-mode .card-until {
       <div class="daily-bar">
         <div class="daily-label">DAILY UPDATE</div>
         <div class="daily-times">
-          <div class="box"><span class="t" id="daily1">--:--</span><span class="cap" id="daily1-cap">09:00</span></div>
+          <div class="box"><span class="t" id="daily1">--時間--分</span><span class="cap" id="daily1-cap">09:00</span></div>
           <span class="sep">/</span>
-          <div class="box"><span class="t" id="daily2">--:--</span><span class="cap" id="daily2-cap">09:30</span></div>
+          <div class="box"><span class="t" id="daily2">--時間--分</span><span class="cap" id="daily2-cap">09:30</span></div>
         </div>
       </div>
 
@@ -826,7 +829,7 @@ body.utc-mode .card-until {
 </div>
 
 <!-- バージョン表示 -->
-<div class="version">Sep 18 '26 🐕 v3.4.1</div>
+<div class="version">Sep 18 '26 🐕 v3.4.3</div>
 
 <script>
 const SLOTS = [
@@ -1085,7 +1088,7 @@ function secondsUntilDaily(now, targetHour, targetMinute) {
 function formatDailyCountdown(secs) {
   const h = Math.floor(secs/3600);
   const m = Math.floor((secs%3600)/60);
-  return `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}`;
+  return `${String(h).padStart(2,'0')}時間 ${String(m).padStart(2,'0')}分`;
 }
 
 function formatCountdown(secs) {
